@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth-utils";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     // Only intercept /api/admin/* routes
     if (request.nextUrl.pathname.startsWith("/api/admin")) {
         const authHeader = request.headers.get("authorization");
