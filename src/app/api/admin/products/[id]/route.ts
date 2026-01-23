@@ -4,11 +4,12 @@ import prisma from "@/lib/prisma";
 // GET single product
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const product = await prisma.product.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: { category: true },
         });
 
@@ -25,9 +26,10 @@ export async function GET(
 // PATCH update product
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
 
         // Convert numbers if present
@@ -36,7 +38,7 @@ export async function PATCH(
         if (body.stock !== undefined) body.stock = parseInt(body.stock);
 
         const product = await prisma.product.update({
-            where: { id: params.id },
+            where: { id },
             data: body,
         });
 
@@ -50,11 +52,12 @@ export async function PATCH(
 // DELETE product
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         await prisma.product.delete({
-            where: { id: params.id },
+            where: { id },
         });
         return NextResponse.json({ message: "Product deleted successfully" });
     } catch (error) {
