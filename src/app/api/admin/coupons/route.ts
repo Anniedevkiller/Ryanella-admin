@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         );
 
         return NextResponse.json(coupon, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         if (error.code === 'P2002') {
             return NextResponse.json({ error: "Coupon code already exists" }, { status: 400 });
         }
