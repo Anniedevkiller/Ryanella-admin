@@ -313,19 +313,123 @@ export default function SettingsPage() {
                         </>
                     )}
 
-                    {(activeSection === "financials" || activeSection === "operations") && (
-                        <Card className="border-gold/10 border-dashed bg-secondary/5 h-[400px] flex flex-col items-center justify-center text-center p-8 rounded-2xl">
-                            <div className="h-16 w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 border border-gold/5">
-                                <Lock className="h-8 w-8 text-gold/40" />
-                            </div>
-                            <h3 className="text-xl font-bold bg-gradient-to-r from-gold to-primary bg-clip-text text-transparent italic">Under Maintenance</h3>
-                            <p className="max-w-xs text-muted-foreground text-sm mt-2">
-                                We are currently optimizing the `{activeSection}` modules to bring you even more control over your luxury workspace.
-                            </p>
-                            <Button variant="link" className="text-gold mt-4 font-bold" onClick={() => setActiveSection("store")}>
-                                Return to Store Info
-                            </Button>
-                        </Card>
+                    {activeSection === "financials" && (
+                        <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                            <Card className="border-gold/10 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Payment Architecture</CardTitle>
+                                    <CardDescription>Configure how Ryanella processes elite transactions.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="flex items-center justify-between p-4 bg-cream/20 rounded-2xl border border-gold/5">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-xl bg-[#09A5DB]/10 flex items-center justify-center">
+                                                <CreditCard className="h-5 w-5 text-[#09A5DB]" />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-black text-primary">Paystack Integration</div>
+                                                <div className="text-[10px] font-bold text-muted-foreground uppercase">Main Payment Gateway</div>
+                                            </div>
+                                        </div>
+                                        <Switch defaultChecked className="data-[state=checked]:bg-gold" />
+                                    </div>
+
+                                    <div className="space-y-4 pt-4">
+                                        <div className="grid gap-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Public Key</Label>
+                                            <Input defaultValue="pk_live_************************" type="password" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-mono text-xs" />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Secret Key</Label>
+                                            <Input defaultValue="sk_live_************************" type="password" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-mono text-xs" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-gold/10 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Tax & Levy Protocols</CardTitle>
+                                    <CardDescription>Define global tax rates for luxury goods.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">VAT (%)</Label>
+                                            <Input type="number" defaultValue="7.5" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-black text-xs" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Luxury Surfcharge</Label>
+                                            <Input type="number" defaultValue="0" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-black text-xs" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
+                    {activeSection === "operations" && (
+                        <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                            <Card className="border-gold/10 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Logistics & Fulfillment</CardTitle>
+                                    <CardDescription>Manage delivery corridors and shipping rates.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="space-y-4">
+                                        {[
+                                            { zone: "Lagos Metropolitan", rate: "₦5,000", time: "24-48 Hours" },
+                                            { zone: "Nationwide (NG)", rate: "₦12,000", time: "3-5 Days" },
+                                            { zone: "International (Priority)", rate: "$150", time: "7-10 Days" },
+                                        ].map((zone, i) => (
+                                            <div key={i} className="flex items-center justify-between p-4 bg-white/50 rounded-2xl border border-gold/5 hover:border-gold/20 transition-all">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-10 w-10 rounded-xl bg-gold/10 flex items-center justify-center">
+                                                        <Truck className="h-5 w-5 text-gold" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-black text-primary">{zone.zone}</div>
+                                                        <div className="text-[10px] font-bold text-muted-foreground uppercase">{zone.time} Estimate</div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-sm font-black text-primary">{zone.rate}</div>
+                                                    <Button variant="link" className="h-auto p-0 text-[9px] font-black uppercase text-gold">Modify</Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <Button variant="outline" className="w-full rounded-xl border-dashed border-gold/20 text-gold font-black uppercase text-[10px] tracking-widest h-12">
+                                        Add Shipping Corridor
+                                    </Button>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-gold/10 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Administrative Protocols</CardTitle>
+                                    <CardDescription>Operational behavior and automated responses.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-0.5">
+                                            <div className="text-sm font-black text-primary">Auto-Fulfill Digital Items</div>
+                                            <div className="text-[11px] text-muted-foreground font-medium">Instantly mark digital goods as delivered.</div>
+                                        </div>
+                                        <Switch defaultChecked className="data-[state=checked]:bg-gold" />
+                                    </div>
+                                    <Separator className="bg-gold/5" />
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-0.5">
+                                            <div className="text-sm font-black text-primary">Low Stock Notifications</div>
+                                            <div className="text-[11px] text-muted-foreground font-medium">Alert admins when inventory drops below threshold.</div>
+                                        </div>
+                                        <Switch defaultChecked className="data-[state=checked]:bg-gold" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     )}
 
                     {activeSection !== "financials" && activeSection !== "operations" && (
