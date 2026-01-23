@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Package, AlertTriangle, Edit3, Download, Loader2, Save } from "lucide-react";
+import { Search, Package, AlertTriangle, Edit3, Download, Loader2, Save, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,6 +31,8 @@ export default function InventoryPage() {
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [newStock, setNewStock] = useState("");
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         fetchInventory();
@@ -52,23 +54,31 @@ export default function InventoryPage() {
         setSelectedProduct(product);
         setNewStock(product.stock.toString());
         setIsEditDialogOpen(true);
+        setShowSuccess(false);
     };
 
     const handleUpdateStock = async () => {
         if (!selectedProduct) return;
+        setIsUpdating(true);
         try {
             await axios.patch(`/api/admin/products/${selectedProduct.id}`, {
                 stock: parseInt(newStock)
             });
             setProducts(products.map(p => p.id === selectedProduct.id ? { ...p, stock: parseInt(newStock) } : p));
-            setIsEditDialogOpen(false);
+            setShowSuccess(true);
+            setTimeout(() => {
+                setIsEditDialogOpen(false);
+                setShowSuccess(false);
+            }, 1000);
         } catch (error) {
             console.error("Failed to update stock:", error);
+        } finally {
+            setIsUpdating(false);
         }
     };
 
-    const filteredProducts = products.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.id.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -83,7 +93,7 @@ export default function InventoryPage() {
                     <p className="text-muted-foreground text-sm">Real-time stock tracking and alerts from Ryanella DB.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="rounded-xl border-gold/10 hover:bg-gold/5 gap-2 text-xs font-bold uppercase tracking-widest" onClick={fetchInventory}>
+                    <Button variant="outline" className="rounded-xl border-gold/10 hover:bg-gold/5 gap-2 text-xs font-bold uppercase tracking-widest" onClick={fetchInventory} disabled={isLoading}>
                         <Loader2 className={cn("h-3 w-3", isLoading && "animate-spin")} />
                         Refresh
                     </Button>
@@ -138,8 +148,9 @@ export default function InventoryPage() {
 
             <div className="bg-white rounded-3xl border border-gold/5 shadow-sm overflow-hidden min-h-[300px]">
                 {isLoading ? (
-                    <div className="h-[300px] flex items-center justify-center">
+                    <div className="h-[300px] flex items-center justify-center flex-col gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-gold" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Accessing Vault...</p>
                     </div>
                 ) : (
                     <Table>
@@ -212,8 +223,13 @@ export default function InventoryPage() {
                                 </TableRow>
                             )) : (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-40 text-center text-muted-foreground text-xs font-black uppercase tracking-widest">
-                                        No matching inventory items
+                                    <TableCell colSpan={5} className="h-60 text-center">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Package className="h-10 w-10 text-muted-foreground/20" />
+                                            <p className="text-muted-foreground text-xs font-black uppercase tracking-widest">
+                                                No matching inventory items
+                                            </p>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -239,14 +255,24 @@ export default function InventoryPage() {
                                 className="rounded-xl border-gold/10 bg-cream/30 h-12 font-black text-lg"
                                 value={newStock}
                                 onChange={(e) => setNewStock(e.target.value)}
+                                disabled={isUpdating}
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="ghost" className="rounded-xl text-[10px] font-black uppercase tracking-widest" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                        <Button className="rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] px-8 h-12 shadow-xl" onClick={handleUpdateStock}>
-                            <Save className="h-3 w-3 mr-2" /> Commit Changes
-                        </Button>
+                        {showSuccess ? (
+                            <div className="flex items-center gap-2 text-emerald-600 font-black uppercase text-[10px] tracking-widest animate-in zoom-in-95 duration-300">
+                                <CheckCircle2 className="h-4 w-4" /> Stock Updated
+                            </div>
+                        ) : (
+                            <>
+                                <Button variant="ghost" className="rounded-xl text-[10px] font-black uppercase tracking-widest" onClick={() => setIsEditDialogOpen(false)} disabled={isUpdating}>Cancel</Button>
+                                <Button className="rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] px-8 h-12 shadow-xl hover:scale-[1.02] transition-transform" onClick={handleUpdateStock} disabled={isUpdating}>
+                                    {isUpdating ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Save className="h-3 w-3 mr-2" />}
+                                    {isUpdating ? "Syncing..." : "Commit Changes"}
+                                </Button>
+                            </>
+                        )}
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

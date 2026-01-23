@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Store,
     CreditCard,
@@ -16,7 +16,9 @@ import {
     Mail,
     UserPlus,
     MoreHorizontal,
-    Search
+    Search,
+    CheckCircle2,
+    Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +97,49 @@ const admins = [
 
 export default function SettingsPage() {
     const [activeSection, setActiveSection] = useState("store");
+    const [isSaving, setIsSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    // Settings State
+    const [settings, setSettings] = useState({
+        storeName: "Ryanella",
+        paystackEnabled: true,
+        paystackPublicKey: "pk_live_************************",
+        paystackSecretKey: "sk_live_************************",
+        vat: "7.5",
+        luxurySurcharge: "0",
+        autoFulfill: true,
+        lowStockNotifications: true,
+        twoFactor: false,
+        sessionTimeout: "30"
+    });
+
+    // Load from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem("ryanella_settings");
+        if (saved) {
+            try {
+                setSettings(JSON.parse(saved));
+            } catch (e) {
+                console.error("Failed to parse settings", e);
+            }
+        }
+    }, []);
+
+    const handleSave = () => {
+        setIsSaving(true);
+        // Simulate API call
+        setTimeout(() => {
+            localStorage.setItem("ryanella_settings", JSON.stringify(settings));
+            setIsSaving(false);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
+        }, 1200);
+    };
+
+    const updateSetting = (key: string, value: any) => {
+        setSettings(prev => ({ ...prev, [key]: value }));
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
@@ -103,6 +148,12 @@ export default function SettingsPage() {
                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Global Settings</h2>
                     <p className="text-muted-foreground text-sm">Configure your Ryanella workspace and preferences.</p>
                 </div>
+                {showSuccess && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 animate-in slide-in-from-top-2 duration-300">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Config Saved Successfully</span>
+                    </div>
+                )}
             </div>
 
             <div className="grid gap-8 lg:grid-cols-3">
@@ -149,7 +200,11 @@ export default function SettingsPage() {
                                 <CardContent className="space-y-4">
                                     <div className="grid gap-2">
                                         <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Store Name</label>
-                                        <Input defaultValue="Ryanella" className="rounded-xl border-gold/10 bg-cream/30" />
+                                        <Input
+                                            value={settings.storeName}
+                                            onChange={(e) => updateSetting("storeName", e.target.value)}
+                                            className="rounded-xl border-gold/10 bg-cream/30"
+                                        />
                                     </div>
                                     <div className="grid gap-2">
                                         <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Store Domain</label>
@@ -289,7 +344,11 @@ export default function SettingsPage() {
                                             <div className="text-sm font-semibold">Two-Factor Authentication</div>
                                             <div className="text-xs text-muted-foreground">Add an extra layer of security to logins.</div>
                                         </div>
-                                        <Switch className="data-[state=checked]:bg-gold" />
+                                        <Switch
+                                            checked={settings.twoFactor}
+                                            onCheckedChange={(checked) => updateSetting("twoFactor", checked)}
+                                            className="data-[state=checked]:bg-gold"
+                                        />
                                     </div>
                                     <Separator className="bg-gold/5" />
                                     <div className="flex items-center justify-between">
@@ -297,7 +356,10 @@ export default function SettingsPage() {
                                             <div className="text-sm font-semibold">Session Timeout</div>
                                             <div className="text-xs text-muted-foreground">Automatically log out inactive admins.</div>
                                         </div>
-                                        <Select defaultValue="30">
+                                        <Select
+                                            value={settings.sessionTimeout}
+                                            onValueChange={(val) => updateSetting("sessionTimeout", val)}
+                                        >
                                             <SelectTrigger className="w-32 rounded-xl border-gold/10 h-9 text-xs">
                                                 <SelectValue />
                                             </SelectTrigger>
@@ -331,17 +393,31 @@ export default function SettingsPage() {
                                                 <div className="text-[10px] font-bold text-muted-foreground uppercase">Main Payment Gateway</div>
                                             </div>
                                         </div>
-                                        <Switch defaultChecked className="data-[state=checked]:bg-gold" />
+                                        <Switch
+                                            checked={settings.paystackEnabled}
+                                            onCheckedChange={(checked) => updateSetting("paystackEnabled", checked)}
+                                            className="data-[state=checked]:bg-gold"
+                                        />
                                     </div>
 
                                     <div className="space-y-4 pt-4">
                                         <div className="grid gap-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Public Key</Label>
-                                            <Input defaultValue="pk_live_************************" type="password" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-mono text-xs" />
+                                            <Input
+                                                value={settings.paystackPublicKey}
+                                                onChange={(e) => updateSetting("paystackPublicKey", e.target.value)}
+                                                type="password"
+                                                className="rounded-xl border-gold/10 bg-cream/30 h-10 font-mono text-xs"
+                                            />
                                         </div>
                                         <div className="grid gap-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Secret Key</Label>
-                                            <Input defaultValue="sk_live_************************" type="password" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-mono text-xs" />
+                                            <Input
+                                                value={settings.paystackSecretKey}
+                                                onChange={(e) => updateSetting("paystackSecretKey", e.target.value)}
+                                                type="password"
+                                                className="rounded-xl border-gold/10 bg-cream/30 h-10 font-mono text-xs"
+                                            />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -356,11 +432,21 @@ export default function SettingsPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">VAT (%)</Label>
-                                            <Input type="number" defaultValue="7.5" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-black text-xs" />
+                                            <Input
+                                                type="number"
+                                                value={settings.vat}
+                                                onChange={(e) => updateSetting("vat", e.target.value)}
+                                                className="rounded-xl border-gold/10 bg-cream/30 h-10 font-black text-xs"
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Luxury Surfcharge</Label>
-                                            <Input type="number" defaultValue="0" className="rounded-xl border-gold/10 bg-cream/30 h-10 font-black text-xs" />
+                                            <Input
+                                                type="number"
+                                                value={settings.luxurySurcharge}
+                                                onChange={(e) => updateSetting("luxurySurcharge", e.target.value)}
+                                                className="rounded-xl border-gold/10 bg-cream/30 h-10 font-black text-xs"
+                                            />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -417,7 +503,11 @@ export default function SettingsPage() {
                                             <div className="text-sm font-black text-primary">Auto-Fulfill Digital Items</div>
                                             <div className="text-[11px] text-muted-foreground font-medium">Instantly mark digital goods as delivered.</div>
                                         </div>
-                                        <Switch defaultChecked className="data-[state=checked]:bg-gold" />
+                                        <Switch
+                                            checked={settings.autoFulfill}
+                                            onCheckedChange={(checked) => updateSetting("autoFulfill", checked)}
+                                            className="data-[state=checked]:bg-gold"
+                                        />
                                     </div>
                                     <Separator className="bg-gold/5" />
                                     <div className="flex items-center justify-between">
@@ -425,19 +515,34 @@ export default function SettingsPage() {
                                             <div className="text-sm font-black text-primary">Low Stock Notifications</div>
                                             <div className="text-[11px] text-muted-foreground font-medium">Alert admins when inventory drops below threshold.</div>
                                         </div>
-                                        <Switch defaultChecked className="data-[state=checked]:bg-gold" />
+                                        <Switch
+                                            checked={settings.lowStockNotifications}
+                                            onCheckedChange={(checked) => updateSetting("lowStockNotifications", checked)}
+                                            className="data-[state=checked]:bg-gold"
+                                        />
                                     </div>
                                 </CardContent>
                             </Card>
                         </div>
                     )}
 
-                    {activeSection !== "financials" && activeSection !== "operations" && (
-                        <div className="flex justify-end gap-3 pt-4">
-                            <Button variant="ghost" className="rounded-xl text-muted-foreground">Cancel Changes</Button>
-                            <Button className="rounded-xl bg-primary hover:bg-primary/90 px-8 transition-all hover:scale-[1.02]">Save Configuration</Button>
-                        </div>
-                    )}
+                    <div className="flex justify-end gap-3 pt-4">
+                        <Button variant="ghost" className="rounded-xl text-muted-foreground">Cancel Changes</Button>
+                        <Button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="rounded-xl bg-primary hover:bg-primary/90 px-8 transition-all hover:scale-[1.02] min-w-[160px]"
+                        >
+                            {isSaving ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Saving...</span>
+                                </div>
+                            ) : (
+                                "Save Configuration"
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
