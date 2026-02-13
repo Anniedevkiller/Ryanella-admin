@@ -5,6 +5,12 @@ import { verifyToken } from "@/lib/auth-utils";
 export function proxy(request: NextRequest) {
     // Only intercept /api/admin/* routes
     if (request.nextUrl.pathname.startsWith("/api/admin")) {
+        // Skip authentication for login, forgot-password, and reset-password routes
+        const publicRoutes = ["/api/admin/auth/login", "/api/admin/auth/forgot-password", "/api/admin/auth/reset-password"];
+        if (publicRoutes.some(route => request.nextUrl.pathname === route)) {
+            return NextResponse.next();
+        }
+
         const authHeader = request.headers.get("authorization");
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {

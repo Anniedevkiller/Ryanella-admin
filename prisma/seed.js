@@ -11,6 +11,7 @@ async function main() {
         where: { email },
         update: {
             role: 'SUPER_ADMIN',
+            password: hashedPassword, // Update password to ensure it's correct
         },
         create: {
             email,

@@ -6,6 +6,8 @@ export async function POST(request: NextRequest) {
     try {
         const { email, password } = await request.json();
 
+        console.log("Login attempt for email:", email);
+
         if (!email || !password) {
             return NextResponse.json(
                 { error: "Email and password are required" },
@@ -17,15 +19,22 @@ export async function POST(request: NextRequest) {
             where: { email },
         });
 
+        console.log("User found:", user ? { id: user.id, email: user.email, role: user.role, isBlocked: user.isBlocked } : "NOT FOUND");
+
         if (!user) {
+            console.log("User not found in database");
             return NextResponse.json(
                 { error: "Invalid credentials" },
                 { status: 401 }
             );
         }
 
+        console.log("Comparing password...");
         const isMatch = await comparePassword(password, user.password);
+        console.log("Password match:", isMatch);
+        
         if (!isMatch) {
+            console.log("Password mismatch");
             return NextResponse.json(
                 { error: "Invalid credentials" },
                 { status: 401 }
